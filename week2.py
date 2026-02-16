@@ -2,15 +2,7 @@ from dotenv import load_dotenv
 import os
 from litellm import completion
 
-load_dotenv()
-
-if not (
-    os.getenv("GEMINI_API_KEY") or
-    os.getenv("ANTHROPIC_API_KEY") or
-    os.getenv("OPENAI_API_KEY")
-):
-    raise RuntimeError("No API key found in environment.")
-
+load_dotenv(override=True)
 
 # Select and change model
 model_options = {
@@ -22,6 +14,19 @@ model_options = {
 choice = input("Choose model (1/2/3): ")
 model_name = model_options.get(choice, "gemini/gemini-2.5-flash")
 
+# Pick the correct API key based on the chosen model
+if model_name.startswith("gemini"):
+    api_key = os.getenv("GEMINI_API_KEY")
+elif model_name.startswith("claude"):
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+elif model_name.startswith("gpt"):
+    api_key = os.getenv("OPENAI_API_KEY")
+else:
+    raise ValueError("Unsupported model")
+
+if not api_key:
+    raise RuntimeError(f"API key not found for selected model: {model_name}")
+    
 # Fixed topic
 topic = "Build a two-week campus visiting plan for famous universities in the United States."
 
@@ -64,6 +69,7 @@ for step, question in enumerate(questions, 1):
     response = completion(
         model=model_name,
         messages=conversation
+        api_key=api_key
     )
 
     # Extract assistant response

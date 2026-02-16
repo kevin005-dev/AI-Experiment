@@ -1,6 +1,6 @@
+from litellm import completion
 from dotenv import load_dotenv
 import os
-from litellm import completion
 
 load_dotenv(override=True)
 
@@ -11,10 +11,13 @@ model_options = {
     "3": "gpt-4o-mini"
 }
 
-choice = input("Choose model (1/2/3): ")
-model_name = model_options.get(choice, "gemini/gemini-2.5-flash")
+choice = input("Choose model (1/2/3): ").strip()
+if choice not in model_options:
+    raise ValueError("Invalid model choice (must be 1/2/3)")
 
-# Pick the correct API key based on the chosen model
+model_name = model_options[choice]
+
+# Define api_key BEFORE calling completion()
 if model_name.startswith("gemini"):
     api_key = os.getenv("GEMINI_API_KEY")
 elif model_name.startswith("claude"):
@@ -26,7 +29,7 @@ else:
 
 if not api_key:
     raise RuntimeError(f"API key not found for selected model: {model_name}")
-    
+
 # Fixed topic
 topic = "Build a two-week campus visiting plan for famous universities in the United States."
 
@@ -59,30 +62,25 @@ print("\nStarting automated sequence...\n")
 
 for step, question in enumerate(questions, 1):
 
-    # Add refinement instruction
     conversation.append({
         "role": "user",
         "content": question
     })
 
-    # Call LiteLLM
     response = completion(
         model=model_name,
-        messages=conversation
+        messages=conversation,
         api_key=api_key
     )
 
-    # Extract assistant response
     ai_message = response["choices"][0]["message"]["content"]
 
     print(f"\n--- Step {step} ---\n")
     print(ai_message)
 
-    # Save assistant response into history
     conversation.append({
         "role": "assistant",
         "content": ai_message
     })
 
 print("\nSequence completed.")
-

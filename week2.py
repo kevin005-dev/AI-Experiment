@@ -60,6 +60,8 @@ conversation = [
 
 print("\nStarting automated sequence...\n")
 
+cumulative_tokens = 0
+
 for step, question in enumerate(questions, 1):
 
     conversation.append({
@@ -73,6 +75,18 @@ for step, question in enumerate(questions, 1):
         api_key=api_key
     )
 
+# Print the token usage for each step in the sequence and the cumulative total tokens used up to that point..
+
+    usage = response.get("usage", {})
+    prompt_tokens = usage.get("prompt_tokens", 0)
+    completion_tokens = usage.get("completion_tokens", 0)
+    total_tokens = usage.get("total_tokens", 0)
+
+    print(f"\nToken Usage for Step {step}:")
+    print(f"  Prompt tokens: {prompt_tokens}")
+    print(f"  Completion tokens: {completion_tokens}")
+    print(f"  Total tokens this call: {total_tokens}")
+
     ai_message = response["choices"][0]["message"]["content"]
 
     print(f"\n--- Step {step} ---\n")
@@ -83,4 +97,3 @@ for step, question in enumerate(questions, 1):
         "content": ai_message
     })
 
-print("\nSequence completed.")

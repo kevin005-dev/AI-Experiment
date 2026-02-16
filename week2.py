@@ -1,7 +1,26 @@
+from dotenv import load_dotenv
+import os
 from litellm import completion
 
+load_dotenv()
+
+if not (
+    os.getenv("GEMINI_API_KEY") or
+    os.getenv("ANTHROPIC_API_KEY") or
+    os.getenv("OPENAI_API_KEY")
+):
+    raise RuntimeError("No API key found in environment.")
+
+
 # Select and change model
-model_name = "gemini/gemini-2.5-flash"
+model_options = {
+    "1": "gemini/gemini-2.5-flash",
+    "2": "claude-3-5-sonnet-20240620",
+    "3": "gpt-4o-mini"
+}
+
+choice = input("Choose model (1/2/3): ")
+model_name = model_options.get(choice, "gemini/gemini-2.5-flash")
 
 # Fixed topic
 topic = "Build a two-week campus visiting plan for famous universities in the United States."
@@ -60,3 +79,4 @@ for step, question in enumerate(questions, 1):
     })
 
 print("\nSequence completed.")
+
